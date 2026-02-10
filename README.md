@@ -6,23 +6,22 @@ RookDocs is a modern, developer-centric documentation viewer that treats your lo
 
 | Feature | Status | Description |
 | :--- | :---: | :--- |
-| **Local Repos** | ✅ | Connect any local folder or clone remote Git repos. |
-| **Markdown** | ✅ | Full GFM support including tables and code highlighting. |
-| **Search** | ✅ | Fast, client-side search across all connected docs. |
-| **Private Repos**| ✅ | robust support for private repos with Fine-grained PATs. |
-| **Mermaid** | 🚧 | Diagram support (testing below). |
-
-## Architecture
-
-3.  Start with `make dev`
+| **Repos** | ✅ | Connect any git repo |
+| **Markdown** | ✅ | Full GFM support including tables and code highlighting |
+| **Search** | ✅ | Fast, client-side search across all connected docs |
+| **Private Repos**| ✅ | robust support for private repos with Fine-grained PATs |
+| **Mermaid** | ✅ | Diagram support |
 
 ## Screenshots
 
 ### Dashboard
-![Dashboard](/Users/soehlert/.gemini/antigravity/brain/2b6229cb-5b9f-4f02-b51f-aaba5e7677f5/dashboard_1770765276580.png)
+![Dashboard](assets/images/dashboard.png)
 
 ### Repository Management
-![Settings](/Users/soehlert/.gemini/antigravity/brain/2b6229cb-5b9f-4f02-b51f-aaba5e7677f5/settings_1770765280860.png)
+![Settings](assets/images/settings.png)
+
+### Documentation Viewer
+![Ansible Documentation](assets/images/ansible_readme.png)
 
 ## License
 
