@@ -9,6 +9,9 @@ export default function Settings() {
     const navigate = useNavigate();
     const [newRepoName, setNewRepoName] = useState('');
     const [newRepoUrl, setNewRepoUrl] = useState('');
+    const [isPrivate, setIsPrivate] = useState(false);
+    const [username, setUsername] = useState('');
+    const [token, setToken] = useState('');
     const [error, setError] = useState('');
 
     // Force re-render on storage change
@@ -28,12 +31,15 @@ export default function Settings() {
             queryClient.invalidateQueries({ queryKey: ['tree'] });
             setNewRepoName('');
             setNewRepoUrl('');
+            setIsPrivate(false);
+            setUsername('');
+            setToken('');
             setError('');
         },
         onError: (err: Error) => {
             console.error("Add repo error:", err);
             if (err.message.includes("128") || err.message.includes("Authentication")) {
-                setError('Failed to access repository. If this is a private repository, please ensure it is public for now as private repo support is coming soon.');
+                setError('Failed to access repository. Please check your credentials or token permissions.');
             } else {
                 setError('Failed to add repository. Please check the URL and try again.');
             }
@@ -72,7 +78,22 @@ export default function Settings() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newRepoName || !newRepoUrl) return;
-        addMutation.mutate({ name: newRepoName, url: newRepoUrl });
+
+        let finalUrl = newRepoUrl.trim();
+
+        if (isPrivate) {
+            if (!username || !token) {
+                setError("Username and Token are required for private repositories.");
+                return;
+            }
+            // Strip existing protocol if present
+            let cleanUrl = finalUrl.replace(/^https?:\/\//, '');
+
+            // Construct auth URL: https://user:token@host/path
+            finalUrl = `https://${encodeURIComponent(username)}:${encodeURIComponent(token)}@${cleanUrl}`;
+        }
+
+        addMutation.mutate({ name: newRepoName, url: finalUrl });
     };
 
     return (
@@ -120,6 +141,44 @@ export default function Settings() {
                                 </div>
                             </div>
 
+                            <div className="flex items-center space-x-2 pt-1">
+                                <input
+                                    type="checkbox"
+                                    id="isPrivate"
+                                    checked={isPrivate}
+                                    onChange={(e) => setIsPrivate(e.target.checked)}
+                                    className="rounded border-white/10 bg-white/5 text-primary focus:ring-offset-background-dark"
+                                />
+                                <label htmlFor="isPrivate" className="text-sm text-gray-300 select-none cursor-pointer">
+                                    This is a private repository
+                                </label>
+                            </div>
+
+                            {isPrivate && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white/5 rounded-lg border border-white/5 animate-in slide-in-from-top-2 duration-200">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-gray-400 ml-1">GitHub Username</label>
+                                        <input
+                                            type="text"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            placeholder="username"
+                                            className="w-full bg-background-dark border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-gray-400 ml-1">Personal Access Token (PAT)</label>
+                                        <input
+                                            type="password"
+                                            value={token}
+                                            onChange={(e) => setToken(e.target.value)}
+                                            placeholder="github_pat_..."
+                                            className="w-full bg-background-dark border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all font-mono"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {error && (
                                 <div className="text-red-400 text-xs flex items-center bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                                     <AlertTriangle size={14} className="mr-2 flex-shrink-0" />
@@ -145,13 +204,17 @@ export default function Settings() {
                                 </summary>
                                 <div className="mt-3 text-sm text-gray-400 space-y-3 pl-4 border-l border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <p>
-                                        Private repositories require authentication. You can use an <strong>HTTPS Personal Access Token</strong> or ensure <strong>SSH keys</strong> are configured on the server.
+                                        Use a <strong>Fine-grained Personal Access Token</strong> (PAT) for best security.
                                     </p>
-                                    <div className="bg-background-dark/50 p-3 rounded-md border border-white/5 font-mono text-xs text-gray-300">
-                                        https://username:token@github.com/user/repo.git
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-medium text-gray-300">Required Permissions:</p>
+                                        <ul className="list-disc list-inside text-xs text-gray-500 space-y-0.5 ml-1">
+                                            <li><code className="text-gray-300">Contents</code>: Read-only</li>
+                                            <li><code className="text-gray-300">Metadata</code>: Read-only</li>
+                                        </ul>
                                     </div>
                                     <p className="text-xs text-gray-500">
-                                        Note: Tokens are stored in the URL. For better security, configure SSH keys on the server and use the SSH URL (git@github.com:...).
+                                        Check "This is a private repository" above and enter your username and PAT. We will construct the authenticated URL for you.
                                     </p>
                                 </div>
                             </details>
@@ -165,7 +228,7 @@ export default function Settings() {
                             {isLoading ? (
                                 <div className="text-center py-4 text-gray-500 text-sm">Loading repositories...</div>
                             ) : repos && repos.length > 0 ? (
-                                repos.map((repo) => (
+                                repos.map((repo: any) => (
                                     <div key={repo.id} className="bg-background-dark border border-white/5 rounded-lg p-4 flex items-center justify-between group hover:border-white/10 transition-colors">
                                         <div className="flex items-center min-w-0 gap-4">
                                             <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
@@ -230,6 +293,6 @@ export default function Settings() {
                     </button>
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
