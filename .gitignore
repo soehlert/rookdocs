@@ -1,7 +1,5 @@
-repos/
+repos/*
 node_modules/
 .DS_Store
 dist/
 .env
-repos/config.json
-
