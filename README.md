@@ -34,8 +34,16 @@ graph TD
     end
 ```
 
-## Getting Started
-
-1.  Clone the repo.
-2.  Run `make install`.
 3.  Start with `make dev`.
+
+## Screenshots
+
+### Dashboard
+![Dashboard](/Users/soehlert/.gemini/antigravity/brain/2b6229cb-5b9f-4f02-b51f-aaba5e7677f5/dashboard_1770765276580.png)
+
+### Repository Management
+![Settings](/Users/soehlert/.gemini/antigravity/brain/2b6229cb-5b9f-4f02-b51f-aaba5e7677f5/settings_1770765280860.png)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { Trash2, RefreshCw, Plus, Folder, AlertTriangle, X, Pin } from 'lucide-react';
+import { Trash2, RefreshCw, Plus, Folder, AlertTriangle, X, Pin, Eye, EyeOff, Search } from 'lucide-react';
 
 export default function Settings() {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
     const [newRepoName, setNewRepoName] = useState('');
     const [newRepoUrl, setNewRepoUrl] = useState('');
     const [isPrivate, setIsPrivate] = useState(false);
     const [username, setUsername] = useState('');
     const [token, setToken] = useState('');
+    const [showToken, setShowToken] = useState(false);
     const [error, setError] = useState('');
 
     // Force re-render on storage change
@@ -103,7 +105,7 @@ export default function Settings() {
                 <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-white/5">
                     <div>
                         <h1 className="text-xl font-semibold text-white">Repositories</h1>
-                        <p className="text-sm text-gray-400 mt-1">Add or sync your repo documentation.</p>
+                        <p className="text-sm text-gray-400 mt-1">Add or sync your repos.</p>
                     </div>
                     <button
                         onClick={() => navigate('/')}
@@ -194,13 +196,22 @@ export default function Settings() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-medium text-gray-400 ml-1">Personal Access Token (PAT)</label>
-                                        <input
-                                            type="password"
-                                            value={token}
-                                            onChange={(e) => setToken(e.target.value)}
-                                            placeholder="github_pat_..."
-                                            className="w-full bg-background-dark border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all font-mono"
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type={showToken ? "text" : "password"}
+                                                value={token}
+                                                onChange={(e) => setToken(e.target.value)}
+                                                placeholder="github_pat_..."
+                                                className="w-full bg-background-dark border border-white/10 rounded-lg pl-3 pr-10 py-2 text-sm text-white focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all font-mono"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowToken(!showToken)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                                            >
+                                                {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -226,62 +237,90 @@ export default function Settings() {
 
                     {/* List Repos */}
                     <div>
-                        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Connected Repositories</h2>
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Connected Repositories</h2>
+                            <div className="relative w-64">
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                                <input
+                                    type="text"
+                                    placeholder="Search repositories..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-background-dark border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all placeholder-gray-600"
+                                />
+                            </div>
+                        </div>
                         <div className="space-y-3">
                             {isLoading ? (
                                 <div className="text-center py-4 text-gray-500 text-sm">Loading repositories...</div>
-                            ) : repos && repos.length > 0 ? (
-                                repos.map((repo: any) => (
-                                    <div key={repo.id} className="bg-background-dark border border-white/5 rounded-lg p-4 flex items-center justify-between group hover:border-white/10 transition-colors">
-                                        <div className="flex items-center min-w-0 gap-4">
-                                            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                                <Folder size={20} className="text-primary" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <h3 className="text-sm font-medium text-gray-200 truncate">{repo.name}</h3>
-                                                <p className="text-xs text-gray-500 font-mono truncate max-w-xs">{repo.url}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <div className="mr-2">
-                                                {repo.status === 'ready' && <span className="text-xs text-green-400 font-medium px-2 py-0.5 bg-green-400/10 rounded">Ready</span>}
-                                                {repo.status === 'syncing' && <span className="flex items-center text-xs text-blue-400 font-medium px-2 py-0.5 bg-blue-400/10 rounded"><RefreshCw size={10} className="animate-spin mr-1" /> Syncing</span>}
-                                                {repo.status === 'error' && <span className="text-xs text-red-400 font-medium px-2 py-0.5 bg-red-400/10 rounded">Error</span>}
-                                                {repo.status === 'pending' && <span className="text-xs text-gray-400 font-medium px-2 py-0.5 bg-gray-500/10 rounded">Pending</span>}
-                                            </div>
-
-                                            <button
-                                                onClick={() => togglePin(repo.id)}
-                                                className={`p-2 rounded-md transition-colors ${pinnedRepoIds.includes(repo.id) ? 'text-primary bg-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/10'}`}
-                                                title={pinnedRepoIds.includes(repo.id) ? "Unpin Repository" : "Pin Repository"}
-                                            >
-                                                <Pin size={16} fill={pinnedRepoIds.includes(repo.id) ? "currentColor" : "none"} />
-                                            </button>
-
-                                            <button
-                                                onClick={() => syncMutation.mutate(repo.id)}
-                                                disabled={syncMutation.isPending || repo.status === 'syncing'}
-                                                className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-md transition-colors"
-                                                title="Sync Now"
-                                            >
-                                                <RefreshCw size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => deleteMutation.mutate(repo.id)}
-                                                disabled={deleteMutation.isPending}
-                                                className="p-2 text-gray-500 hover:text-red-400 hover:bg-white/10 rounded-md transition-colors"
-                                                title="Remove Repository"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))
                             ) : (
-                                <div className="text-center p-8 border border-white/5 border-dashed rounded-lg bg-background-dark/50">
-                                    <p className="text-gray-500 text-sm">No repositories connected.</p>
-                                </div>
+                                (() => {
+                                    // Process repos: Filter -> Reverse (Newest First)
+                                    const processedRepos = (repos || [])
+                                        .filter((r: any) => r.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                                        .slice()
+                                        .reverse();
+
+                                    if (processedRepos.length === 0) {
+                                        return (
+                                            <div className="text-center p-8 border border-white/5 border-dashed rounded-lg bg-background-dark/50">
+                                                <p className="text-gray-500 text-sm">
+                                                    {repos && repos.length > 0 ? "No matching repositories found." : "No repositories connected."}
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return processedRepos.map((repo: any) => (
+                                        <div key={repo.id} className="bg-background-dark border border-white/5 rounded-lg p-4 flex items-center justify-between group hover:border-white/10 transition-colors">
+                                            <div className="flex items-center min-w-0 gap-4">
+                                                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                                                    <Folder size={20} className="text-primary" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h3 className="text-sm font-medium text-gray-200 truncate">{repo.name}</h3>
+                                                    <p className="text-xs text-gray-500 font-mono truncate max-w-xs">
+                                                        {repo.url.replace(/^https?:\/\/(.*@)?(www\.)?github\.com\//, '').replace(/\.git$/, '')}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <div className="mr-2">
+                                                    {repo.status === 'ready' && <span className="text-xs text-green-400 font-medium px-2 py-0.5 bg-green-400/10 rounded">Ready</span>}
+                                                    {repo.status === 'syncing' && <span className="flex items-center text-xs text-blue-400 font-medium px-2 py-0.5 bg-blue-400/10 rounded"><RefreshCw size={10} className="animate-spin mr-1" /> Syncing</span>}
+                                                    {repo.status === 'error' && <span className="text-xs text-red-400 font-medium px-2 py-0.5 bg-red-400/10 rounded">Error</span>}
+                                                    {repo.status === 'pending' && <span className="text-xs text-gray-400 font-medium px-2 py-0.5 bg-gray-500/10 rounded">Pending</span>}
+                                                </div>
+
+                                                <button
+                                                    onClick={() => togglePin(repo.id)}
+                                                    className={`p-2 rounded-md transition-colors ${pinnedRepoIds.includes(repo.id) ? 'text-primary bg-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/10'}`}
+                                                    title={pinnedRepoIds.includes(repo.id) ? "Unpin Repository" : "Pin Repository"}
+                                                >
+                                                    <Pin size={16} fill={pinnedRepoIds.includes(repo.id) ? "currentColor" : "none"} />
+                                                </button>
+
+                                                <button
+                                                    onClick={() => syncMutation.mutate(repo.id)}
+                                                    disabled={syncMutation.isPending || repo.status === 'syncing'}
+                                                    className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                                                    title="Sync Now"
+                                                >
+                                                    <RefreshCw size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteMutation.mutate(repo.id)}
+                                                    disabled={deleteMutation.isPending}
+                                                    className="p-2 text-gray-500 hover:text-red-400 hover:bg-white/10 rounded-md transition-colors"
+                                                    title="Remove Repository"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ));
+                                })()
                             )}
                         </div>
                     </div>

@@ -16,8 +16,10 @@ export default function Welcome() {
     const hasRepos = repos && repos.length > 0;
 
     // Pagination Logic
-    const totalPages = repos ? Math.ceil(repos.length / ITEMS_PER_PAGE) : 0;
-    const paginatedRepos = repos ? repos.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE) : [];
+    // Pagination Logic. Repos reversed for Newest First.
+    const sortedRepos = repos ? [...repos].reverse() : [];
+    const totalPages = Math.ceil(sortedRepos.length / ITEMS_PER_PAGE);
+    const paginatedRepos = sortedRepos.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
     const nextPage = () => setPage(p => Math.min(p + 1, totalPages));
     const prevPage = () => setPage(p => Math.max(p - 1, 1));
@@ -70,7 +72,9 @@ export default function Welcome() {
                                 </div>
                                 <div className="text-left min-w-0">
                                     <h3 className="font-medium text-gray-200 truncate text-lg mb-1">{repo.name}</h3>
-                                    <p className="text-xs text-gray-500 truncate font-mono bg-black/20 px-2 py-1 rounded inline-block max-w-full">{repo.url}</p>
+                                    <p className="text-xs text-primary/90 font-mono bg-white/10 px-1.5 py-0.5 rounded inline-block truncate max-w-full">
+                                        {repo.url.replace(/^https?:\/\/(.*@)?(www\.)?github\.com\//, '').replace(/\.git$/, '')}
+                                    </p>
                                 </div>
                             </Link>
                         ))}

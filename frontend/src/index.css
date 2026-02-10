@@ -71,6 +71,13 @@ body {
   /* Nord Frost Blue */
 }
 
+/* Makefile targets (section/title) should be Green as requested */
+.hljs-section,
+.hljs-title {
+  color: #A3BE8C !important;
+  /* Nord Aurora Green */
+}
+
 
 /* Badge/Image Styling: Make images in prose inline and remove margins */
 .prose img {
