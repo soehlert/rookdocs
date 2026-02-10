@@ -136,6 +136,26 @@ export default function Settings() {
                                 Add Repository
                             </button>
                         </form>
+
+                        <div className="mt-6 border-t border-white/5 pt-4">
+                            <details className="group">
+                                <summary className="flex items-center text-xs text-gray-500 hover:text-gray-300 cursor-pointer transition-colors select-none list-none">
+                                    <span className="mr-2">▶</span>
+                                    How to add private repositories?
+                                </summary>
+                                <div className="mt-3 text-sm text-gray-400 space-y-3 pl-4 border-l border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <p>
+                                        Private repositories require authentication. You can use an <strong>HTTPS Personal Access Token</strong> or ensure <strong>SSH keys</strong> are configured on the server.
+                                    </p>
+                                    <div className="bg-background-dark/50 p-3 rounded-md border border-white/5 font-mono text-xs text-gray-300">
+                                        https://username:token@github.com/user/repo.git
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                        Note: Tokens are stored in the URL. For better security, configure SSH keys on the server and use the SSH URL (git@github.com:...).
+                                    </p>
+                                </div>
+                            </details>
+                        </div>
                     </div>
 
                     {/* List Repos */}
@@ -210,6 +230,6 @@ export default function Settings() {
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
