@@ -1,0 +1,115 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* User Defined Theme Colors */
+  --color-primary: #5DADE2;
+  --color-background-light: #f6f6f8;
+  --color-background-dark: #1F2937;
+  --color-sidebar-dark: #111827;
+}
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-background-light: var(--color-background-light);
+  --color-background-dark: var(--color-background-dark);
+  --color-sidebar-dark: var(--color-sidebar-dark);
+  --font-display: Inter, sans-serif;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: flex-start;
+  /* Changed from centered Vite default */
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+@layer base {
+  html {
+    @apply h-full;
+  }
+
+  body {
+    @apply h-full;
+    background-color: var(--color-background-dark);
+    color: #f4f4f5;
+    /* zinc-100 */
+  }
+
+  #root {
+    @apply h-full w-full;
+  }
+}
+
+/* Custom Highlight.js Overrides */
+/* User prefers white for strings (descriptions in yaml/make targets) instead of green */
+.hljs-string {
+  color: #e5e9f0 !important;
+  /* Nord Snow Storm white */
+}
+
+/* Badge/Image Styling: Make images in prose inline and remove margins */
+.prose img {
+  display: inline-block !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  vertical-align: middle;
+}
+
+/* Paragraphs containing images inside prose should be tighter to allow stacking */
+.prose p:has(img) {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  display: inline-block;
+  /* Allow multiple badge paragraphs to flow if needed */
+  width: 100%;
+  /* Or auto? Let's stick to inline-block behavior generally */
+}
+
+/* Fix padding and alignment for code blocks */
+/* Reset prose-code styles when inside a pre block to avoid double-styling (pills) and cutoffs */
+.prose pre {
+  padding: 1rem !important;
+  /* Consistent padding for the container */
+  background-color: #2e3440 !important;
+  /* Nord polar night */
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background-color: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: inherit !important;
+  font-weight: inherit !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  display: block !important;
+  /* Ensure it takes full width of pre */
+}
+
+/* Ensure inline code OUTSIDE of pre still looks good */
+.prose :not(pre)>code {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
