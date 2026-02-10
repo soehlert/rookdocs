@@ -136,7 +136,11 @@ export default function Layout() {
             {/* Sidebar */}
             <aside className={`${isSidebarOpen ? 'w-64' : 'w-0'} shrink-0 bg-sidebar-dark border-r border-white/5 transition-all duration-300 flex flex-col overflow-hidden`}>
                 <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
-                    <Link to="/" className="flex items-center space-x-2 font-bold text-gray-100 tracking-tight hover:text-primary transition-colors">
+                    <Link
+                        to="/"
+                        onClick={() => setSearchQuery('')}
+                        className="flex items-center space-x-2 font-bold text-gray-100 tracking-tight hover:text-primary transition-colors"
+                    >
                         <FolderGit2 className="text-primary" size={20} />
                         <span>RookDocs</span>
                     </Link>
@@ -175,11 +179,17 @@ export default function Layout() {
                                                     <Link
                                                         to={`/doc/${urlPath}`}
                                                         onClick={handleResultClick}
-                                                        className="block p-3 hover:bg-white/5 transition-colors"
+                                                        className="block p-3 hover:bg-white/5 transition-colors group"
                                                     >
-                                                        <div className="text-sm font-medium text-gray-200 truncate">{result.name || result.path}</div>
+                                                        <div className="flex items-center text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1 group-hover:text-gray-400 transition-colors">
+                                                            <FolderGit2 size={10} className="mr-1.5" />
+                                                            {repoName}
+                                                        </div>
+                                                        <div className="text-sm font-medium text-gray-200 truncate pl-4 border-l border-white/10 group-hover:border-primary/50 transition-colors">
+                                                            {pathParts.slice(1).join('/') || result.name}
+                                                        </div>
                                                         {result.match && (
-                                                            <div className="text-xs text-gray-500 mt-1 line-clamp-2" dangerouslySetInnerHTML={{ __html: result.match }} />
+                                                            <div className="text-xs text-gray-500 mt-1.5 ml-4 pl-2 border-l border-transparent group-hover:border-white/10 line-clamp-2 font-mono bg-black/20 p-1 rounded" dangerouslySetInnerHTML={{ __html: result.match }} />
                                                         )}
                                                     </Link>
                                                 </li>
@@ -258,7 +268,11 @@ export default function Layout() {
                 </div>
 
                 <div className="p-4 border-t border-white/5 shrink-0">
-                    <Link to="/repositories" className="flex items-center px-2 py-2 text-sm text-gray-400 hover:text-gray-100 hover:bg-white/5 rounded-md transition-colors">
+                    <Link
+                        to="/repositories"
+                        onClick={() => setSearchQuery('')}
+                        className="flex items-center px-2 py-2 text-sm text-gray-400 hover:text-gray-100 hover:bg-white/5 rounded-md transition-colors"
+                    >
                         <Settings size={16} className="mr-2" />
                         Repositories
                     </Link>

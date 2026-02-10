@@ -103,7 +103,7 @@ export default function Settings() {
                 <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-white/5">
                     <div>
                         <h1 className="text-xl font-semibold text-white">Repositories</h1>
-                        <p className="text-sm text-gray-400 mt-1">Add or sync your Markdown knowledge bases.</p>
+                        <p className="text-sm text-gray-400 mt-1">Add or sync your repo documentation.</p>
                     </div>
                     <button
                         onClick={() => navigate('/')}
@@ -141,17 +141,43 @@ export default function Settings() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center space-x-2 pt-1">
-                                <input
-                                    type="checkbox"
-                                    id="isPrivate"
-                                    checked={isPrivate}
-                                    onChange={(e) => setIsPrivate(e.target.checked)}
-                                    className="rounded border-white/10 bg-white/5 text-primary focus:ring-offset-background-dark"
-                                />
-                                <label htmlFor="isPrivate" className="text-sm text-gray-300 select-none cursor-pointer">
-                                    This is a private repository
-                                </label>
+                            <div className="space-y-4">
+                                <div className="flex items-center space-x-2 pt-1">
+                                    <input
+                                        type="checkbox"
+                                        id="isPrivate"
+                                        checked={isPrivate}
+                                        onChange={(e) => setIsPrivate(e.target.checked)}
+                                        className="rounded border-white/10 bg-white/5 text-primary focus:ring-offset-background-dark"
+                                    />
+                                    <label htmlFor="isPrivate" className="text-sm text-gray-300 select-none cursor-pointer">
+                                        This is a private repository
+                                    </label>
+                                </div>
+
+                                <div className="border-l-2 border-white/5 pl-3 ml-1">
+                                    <details className="group">
+                                        <summary className="flex items-center text-xs text-gray-500 hover:text-gray-300 cursor-pointer transition-colors select-none list-none outline-none">
+                                            <span className="mr-2 transition-transform duration-200 group-open:rotate-90">▶</span>
+                                            How to add private repositories?
+                                        </summary>
+                                        <div className="mt-2 text-sm text-gray-400 space-y-3 pt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            <p>
+                                                Use a <strong>Fine-grained Personal Access Token</strong> (PAT) for best security.
+                                            </p>
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-medium text-gray-300">Required Permissions:</p>
+                                                <ul className="list-disc list-inside text-xs text-gray-500 space-y-0.5 ml-1">
+                                                    <li><code className="text-gray-300">Contents</code>: Read-only</li>
+                                                    <li><code className="text-gray-300">Metadata</code>: Read-only</li>
+                                                </ul>
+                                            </div>
+                                            <p className="text-xs text-gray-500">
+                                                Check "This is a private repository" above and enter your username and PAT. The authenticated URL will be constructed automatically.
+                                            </p>
+                                        </div>
+                                    </details>
+                                </div>
                             </div>
 
                             {isPrivate && (
@@ -179,6 +205,7 @@ export default function Settings() {
                                 </div>
                             )}
 
+
                             {error && (
                                 <div className="text-red-400 text-xs flex items-center bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                                     <AlertTriangle size={14} className="mr-2 flex-shrink-0" />
@@ -195,30 +222,6 @@ export default function Settings() {
                                 Add Repository
                             </button>
                         </form>
-
-                        <div className="mt-6 border-t border-white/5 pt-4">
-                            <details className="group">
-                                <summary className="flex items-center text-xs text-gray-500 hover:text-gray-300 cursor-pointer transition-colors select-none list-none">
-                                    <span className="mr-2">▶</span>
-                                    How to add private repositories?
-                                </summary>
-                                <div className="mt-3 text-sm text-gray-400 space-y-3 pl-4 border-l border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <p>
-                                        Use a <strong>Fine-grained Personal Access Token</strong> (PAT) for best security.
-                                    </p>
-                                    <div className="space-y-1">
-                                        <p className="text-xs font-medium text-gray-300">Required Permissions:</p>
-                                        <ul className="list-disc list-inside text-xs text-gray-500 space-y-0.5 ml-1">
-                                            <li><code className="text-gray-300">Contents</code>: Read-only</li>
-                                            <li><code className="text-gray-300">Metadata</code>: Read-only</li>
-                                        </ul>
-                                    </div>
-                                    <p className="text-xs text-gray-500">
-                                        Check "This is a private repository" above and enter your username and PAT. We will construct the authenticated URL for you.
-                                    </p>
-                                </div>
-                            </details>
-                        </div>
                     </div>
 
                     {/* List Repos */}
