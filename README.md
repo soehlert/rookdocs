@@ -14,27 +14,7 @@ RookDocs is a modern, developer-centric documentation viewer that treats your lo
 
 ## Architecture
 
-```mermaid
-graph TD
-    A[User] -->|Browser| B(React Frontend)
-    B -->|API Calls| C{FastAPI Backend}
-    C -->|Git Operations| D[Git CLI]
-    C -->|File System| E[Local Storage]
-    D -->|Clone/Pull| F((GitHub/Remote))
-    
-    subgraph Frontend
-    B1[Dashboard]
-    B2[Markdown Renderer]
-    B3[Search Index]
-    end
-    
-    subgraph Backend
-    C1[Repo Manager]
-    C2[File Service]
-    end
-```
-
-3.  Start with `make dev`.
+3.  Start with `make dev`
 
 ## Screenshots
 
