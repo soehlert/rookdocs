@@ -1,45 +1,41 @@
 # RookDocs
 
-RookDocs is a self-hosted personal wiki application that aggregates and serves Markdown documentation from multiple GitHub repositories.
+RookDocs is a modern, developer-centric documentation viewer that treats your local Git repositories as the source of truth.
 
 ## Features
 
-- **Dark Mode UI**: Clean, modern interface designed for reading.
-- **Git Integration**: Sync documentation from any public Git repository.
-- **Markdown Rendering**: fast, high-quality rendering with syntax highlighting and table support.
-- **Full Text Search**: Instantly find content across all connected repositories.
-- **Docker Deployment**: Easy to deploy with Docker Compose.
+| Feature | Status | Description |
+| :--- | :---: | :--- |
+| **Local Repos** | ✅ | Connect any local folder or clone remote Git repos. |
+| **Markdown** | ✅ | Full GFM support including tables and code highlighting. |
+| **Search** | ✅ | Fast, client-side search across all connected docs. |
+| **Private Repos**| ✅ | robust support for private repos with Fine-grained PATs. |
+| **Mermaid** | 🚧 | Diagram support (testing below). |
 
-## Tech Stack
+## Architecture
 
-- **Backend**: Python 3.14 + FastAPI (using `uv` for dependency management)
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Infrastructure**: Docker Compose
-
-## Quick Start
-
-1.  Clone this repository.
-2.  Start the application:
-    ```bash
-    docker compose up --build
-    ```
-3.  Open your browser to [http://localhost:9123](http://localhost:9123).
-4.  Go to **Settings** and add a repository (e.g., `https://github.com/fastapi/fastapi`).
-
-## Development
-
-### Backend
-The backend uses `uv` for dependency management.
-```bash
-cd backend
-uv sync
-uv run uvicorn app.main:app --reload
+```mermaid
+graph TD
+    A[User] -->|Browser| B(React Frontend)
+    B -->|API Calls| C{FastAPI Backend}
+    C -->|Git Operations| D[Git CLI]
+    C -->|File System| E[Local Storage]
+    D -->|Clone/Pull| F((GitHub/Remote))
+    
+    subgraph Frontend
+    B1[Dashboard]
+    B2[Markdown Renderer]
+    B3[Search Index]
+    end
+    
+    subgraph Backend
+    C1[Repo Manager]
+    C2[File Service]
+    end
 ```
 
-### Frontend
-The frontend uses Vite.
-```bash
-cd frontend
-npm install
-npm run dev
-```
+## Getting Started
+
+1.  Clone the repo.
+2.  Run `make install`.
+3.  Start with `make dev`.
