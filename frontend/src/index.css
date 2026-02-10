@@ -65,6 +65,13 @@ body {
   /* Nord Snow Storm white */
 }
 
+/* Force YAML keys to use primary color (or similar) to stand out */
+.hljs-attr {
+  color: #88C0D0 !important;
+  /* Nord Frost Blue */
+}
+
+
 /* Badge/Image Styling: Make images in prose inline and remove margins */
 .prose img {
   display: inline-block !important;

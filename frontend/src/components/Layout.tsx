@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Settings, Search, Menu, X, ChevronRight, ChevronDown, FolderGit2, Pin, FileText, Folder } from 'lucide-react';
-import { api, type TreeItem } from '../lib/api';
+import { Settings, Search, Menu, X, ChevronRight, ChevronDown, FolderGit2, Pin, FileText, Folder, Loader2 } from 'lucide-react';
+import { api, type TreeItem, type SearchResult } from '../lib/api';
 
 export default function Layout() {
     const { pathname } = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [expandedPaths, setExpandedPaths] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchDebounce, setSearchDebounce] = useState('');
     const [pinnedRepoIds, setPinnedRepoIds] = useState<string[]>([]);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -20,6 +21,21 @@ export default function Layout() {
     const { data: tree } = useQuery({
         queryKey: ['tree'],
         queryFn: api.fetchTree
+    });
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchDebounce(searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Search Query
+    const { data: searchResults, isLoading: isSearchLoading } = useQuery({
+        queryKey: ['search', searchDebounce],
+        queryFn: () => api.search(searchDebounce),
+        enabled: searchDebounce.length > 2,
     });
 
     // Load pinned repos on mount and listen for updates
@@ -58,18 +74,19 @@ export default function Layout() {
         return repos?.find((r: any) => r.id === id)?.name || id;
     };
 
+    // Helper to clear search
+    const handleResultClick = () => {
+        setSearchQuery('');
+    };
+
     // Recursive File Tree Component
     const FileTreeItem = ({ item, level = 0, repoNameForUrl }: { item: TreeItem, level?: number, repoNameForUrl?: string }) => {
         const isExpanded = expandedPaths.includes(item.path);
 
-        // Construct the display-friendly URL path
-        // item.path is consistently full path "repoId/folder/file" (or just repoId for root)
         const pathParts = item.path.split('/');
         const repoId = pathParts[0];
         const effectiveRepoName = repoNameForUrl || getRepoName(repoId);
 
-        // Reconstruct URL path with Name
-        // If item.path is "uuid/folder/file", display path is "Name/folder/file"
         const relativePath = pathParts.slice(1).join('/');
         const urlPath = relativePath ? `${encodeURIComponent(effectiveRepoName)}/${relativePath}` : encodeURIComponent(effectiveRepoName);
 
@@ -133,6 +150,43 @@ export default function Layout() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                        {/* Search Results Dropdown */}
+                        {searchQuery.length > 2 && (
+                            <div className="absolute top-full left-4 right-4 mt-2 bg-sidebar-dark border border-white/10 rounded-lg shadow-2xl max-h-64 overflow-y-auto z-50">
+                                {isSearchLoading ? (
+                                    <div className="p-4 text-center text-gray-400 flex items-center justify-center">
+                                        <Loader2 size={16} className="animate-spin mr-2" /> Searching...
+                                    </div>
+                                ) : searchResults && searchResults.length > 0 ? (
+                                    <ul>
+                                        {searchResults.map((result: SearchResult, idx: number) => {
+                                            // Resolve path for search result
+                                            const pathParts = result.path.split('/');
+                                            const repoId = pathParts[0];
+                                            const repoName = getRepoName(repoId);
+                                            const urlPath = `${encodeURIComponent(repoName)}/${pathParts.slice(1).join('/')}`;
+
+                                            return (
+                                                <li key={idx} className="border-b border-white/5 last:border-0">
+                                                    <Link
+                                                        to={`/doc/${urlPath}`}
+                                                        onClick={handleResultClick}
+                                                        className="block p-3 hover:bg-white/5 transition-colors"
+                                                    >
+                                                        <div className="text-sm font-medium text-gray-200 truncate">{result.name || result.path}</div>
+                                                        {result.match && (
+                                                            <div className="text-xs text-gray-500 mt-1 line-clamp-2" dangerouslySetInnerHTML={{ __html: result.match }} />
+                                                        )}
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <div className="p-4 text-center text-gray-500 text-sm">No results found.</div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 

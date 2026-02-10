@@ -81,7 +81,7 @@ export default function Settings() {
                 {/* Header */}
                 <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-white/5">
                     <div>
-                        <h1 className="text-xl font-semibold text-white">Manage Repositories</h1>
+                        <h1 className="text-xl font-semibold text-white">Repositories</h1>
                         <p className="text-sm text-gray-400 mt-1">Add or sync your Markdown knowledge bases.</p>
                     </div>
                     <button
