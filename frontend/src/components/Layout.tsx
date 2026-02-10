@@ -51,12 +51,16 @@ export default function Layout() {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    // Command+K Shortcut
+    // Command+K Shortcut & Escape to close
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault();
                 searchInputRef.current?.focus();
+            }
+            if (e.key === 'Escape') {
+                setSearchQuery('');
+                searchInputRef.current?.blur();
             }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -132,10 +136,10 @@ export default function Layout() {
             {/* Sidebar */}
             <aside className={`${isSidebarOpen ? 'w-64' : 'w-0'} shrink-0 bg-sidebar-dark border-r border-white/5 transition-all duration-300 flex flex-col overflow-hidden`}>
                 <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
-                    <div className="flex items-center space-x-2 font-bold text-gray-100 tracking-tight">
+                    <Link to="/" className="flex items-center space-x-2 font-bold text-gray-100 tracking-tight hover:text-primary transition-colors">
                         <FolderGit2 className="text-primary" size={20} />
                         <span>RookDocs</span>
-                    </div>
+                    </Link>
                 </div>
 
                 {/* Search Bar */}
@@ -254,9 +258,9 @@ export default function Layout() {
                 </div>
 
                 <div className="p-4 border-t border-white/5 shrink-0">
-                    <Link to="/settings" className="flex items-center px-2 py-2 text-sm text-gray-400 hover:text-gray-100 hover:bg-white/5 rounded-md transition-colors">
+                    <Link to="/repositories" className="flex items-center px-2 py-2 text-sm text-gray-400 hover:text-gray-100 hover:bg-white/5 rounded-md transition-colors">
                         <Settings size={16} className="mr-2" />
-                        Settings
+                        Repositories
                     </Link>
                 </div>
             </aside>

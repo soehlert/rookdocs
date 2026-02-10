@@ -63,7 +63,7 @@ export default function Welcome() {
                     ))}
                     <div className="mt-4 border-t border-white/5 pt-4">
                         <Link
-                            to="/settings"
+                            to="/repositories"
                             className="inline-flex items-center text-sm text-gray-500 hover:text-white transition-colors"
                         >
                             <Plus size={14} className="mr-1.5" />
