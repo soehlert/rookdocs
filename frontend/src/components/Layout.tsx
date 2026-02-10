@@ -1,20 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Settings, Search, Menu, X, ChevronRight, ChevronDown, FolderGit2, Pin } from 'lucide-react';
-import { api } from '../lib/api';
+import { Settings, Search, Menu, X, ChevronRight, ChevronDown, FolderGit2, Pin, FileText, Folder } from 'lucide-react';
+import { api, type TreeItem } from '../lib/api';
 
 export default function Layout() {
     const { pathname } = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [expandedRepos, setExpandedRepos] = useState<string[]>([]);
+    const [expandedPaths, setExpandedPaths] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [pinnedRepoIds, setPinnedRepoIds] = useState<string[]>([]);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
-    const { data: tree } = useQuery({
+    const { data: repos } = useQuery({
         queryKey: ['repos'],
         queryFn: api.fetchRepos
+    });
+
+    const { data: tree } = useQuery({
+        queryKey: ['tree'],
+        queryFn: api.fetchTree
     });
 
     // Load pinned repos on mount and listen for updates
@@ -30,44 +35,76 @@ export default function Layout() {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    const toggleRepo = (repoId: string) => {
-        setExpandedRepos(prev =>
-            prev.includes(repoId) ? prev.filter(id => id !== repoId) : [...prev, repoId]
+    // Command+K Shortcut
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    const togglePath = (path: string) => {
+        setExpandedPaths(prev =>
+            prev.includes(path) ? prev.filter(p => p !== path) : [...prev, path]
         );
     };
 
-    // Filter Repos
-    const pinnedRepos = tree?.filter((repo: any) => pinnedRepoIds.includes(repo.id)) || [];
-    const otherRepos = tree?.filter((repo: any) => !pinnedRepoIds.includes(repo.id)) || [];
+    // Helper to get Repo Name from ID (first path segment)
+    const getRepoName = (id: string) => {
+        return repos?.find((r: any) => r.id === id)?.name || id;
+    };
 
-    // Repo Item Component
-    const RepoItem = ({ repo, isPinned = false }: { repo: any, isPinned?: boolean }) => {
-        const isExpanded = expandedRepos.includes(repo.id);
-        const encodedName = encodeURIComponent(repo.name);
-        // Check if active: Check for ID OR Name matches in URL
-        const isActive = pathname.includes(repo.id) || pathname.includes(encodedName);
+    // Recursive File Tree Component
+    const FileTreeItem = ({ item, level = 0, repoNameForUrl }: { item: TreeItem, level?: number, repoNameForUrl?: string }) => {
+        const isExpanded = expandedPaths.includes(item.path);
+
+        // Construct the display-friendly URL path
+        // item.path is consistently full path "repoId/folder/file" (or just repoId for root)
+        const pathParts = item.path.split('/');
+        const repoId = pathParts[0];
+        const effectiveRepoName = repoNameForUrl || getRepoName(repoId);
+
+        // Reconstruct URL path with Name
+        // If item.path is "uuid/folder/file", display path is "Name/folder/file"
+        const relativePath = pathParts.slice(1).join('/');
+        const urlPath = relativePath ? `${encodeURIComponent(effectiveRepoName)}/${relativePath}` : encodeURIComponent(effectiveRepoName);
+
+        const isActive = pathname.includes(urlPath) || pathname.includes(item.path);
+        const isDir = item.type === 'directory';
 
         return (
-            <div className="mb-1">
-                <button
-                    onClick={() => toggleRepo(repo.id)}
-                    className={`w-full flex items-center px-2 py-1.5 text-sm rounded-md transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'}`}
-                >
-                    <ChevronDown size={14} className={`mr-2 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
-                    {isPinned && <Pin size={12} className="mr-2 text-primary rotate-45" />}
-                    <span className="truncate font-medium">{repo.name}</span>
-                </button>
-
-                {isExpanded && (
-                    <div className="ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
-                        {/* Use Name-based URL by default now */}
-                        <Link
-                            to={`/doc/${encodedName}/README.md`}
-                            className={`block px-2 py-1 text-xs rounded-md transition-colors ${pathname.includes(`${encodedName}/README.md`) || pathname.includes(`${repo.id}/README.md`) ? 'text-primary bg-primary/5' : 'text-gray-500 hover:text-gray-300'}`}
+            <div className="select-none">
+                {isDir ? (
+                    <div>
+                        <button
+                            onClick={() => togglePath(item.path)}
+                            className={`w-full flex items-center px-2 py-1.5 text-sm rounded-md transition-colors ${isActive ? 'text-primary' : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'}`}
+                            style={{ paddingLeft: `${(level * 12) + 8}px` }}
                         >
-                            README.md
-                        </Link>
+                            <ChevronDown size={14} className={`mr-2 transition-transform shrink-0 ${isExpanded ? '' : '-rotate-90'}`} />
+                            <span className="truncate font-medium">{level === 0 ? effectiveRepoName : item.name}</span>
+                        </button>
+                        {isExpanded && item.children && (
+                            <div className="mt-1">
+                                {item.children.map((child: any) => (
+                                    <FileTreeItem key={child.path} item={child} level={level + 1} repoNameForUrl={effectiveRepoName} />
+                                ))}
+                            </div>
+                        )}
                     </div>
+                ) : (
+                    <Link
+                        to={`/doc/${urlPath}`}
+                        className={`flex items-center px-2 py-1.5 text-xs rounded-md transition-colors ${isActive ? 'text-primary bg-primary/10' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'}`}
+                        style={{ paddingLeft: `${(level * 12) + 24}px` }}
+                    >
+                        <FileText size={12} className="mr-2 shrink-0 opacity-70" />
+                        <span className="truncate">{item.name}</span>
+                    </Link>
                 )}
             </div>
         );
@@ -84,13 +121,14 @@ export default function Layout() {
                     </div>
                 </div>
 
-                {/* Search Bar (Simplified Mock) */}
+                {/* Search Bar */}
                 <div className="p-4 border-b border-white/5 shrink-0 relative z-20">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
                         <input
+                            ref={searchInputRef}
                             type="text"
-                            placeholder="Search docs..."
+                            placeholder="Search docs (Cmd+K)..."
                             className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-9 pr-4 text-sm text-gray-300 placeholder-gray-600 focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -100,15 +138,32 @@ export default function Layout() {
 
                 <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                     {/* Pinned Repos */}
-                    {pinnedRepos.length > 0 && (
+                    {pinnedRepoIds.length > 0 && repos && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2 flex items-center">
                                 <Pin size={12} className="mr-1" /> Pinned
                             </h3>
                             <div className="space-y-0.5">
-                                {pinnedRepos.map((repo: any) => (
-                                    <RepoItem key={`pinned-${repo.id}`} repo={repo} isPinned={true} />
-                                ))}
+                                {pinnedRepoIds.map((id: string) => {
+                                    const repo = repos.find((r: any) => r.id === id);
+                                    // Try to find tree item
+                                    const treeItem = tree?.find((t: any) => t.path === id);
+
+                                    if (treeItem && repo) {
+                                        return <FileTreeItem key={`pinned-${id}`} item={treeItem} repoNameForUrl={repo.name} />;
+                                    }
+
+                                    // Fallback
+                                    return repo ? (
+                                        <Link
+                                            key={`pinned-${id}`}
+                                            to={`/doc/${encodeURIComponent(repo.name)}/README.md`}
+                                            className="block px-2 py-1.5 text-sm text-gray-400 hover:text-white"
+                                        >
+                                            {repo.name}
+                                        </Link>
+                                    ) : null;
+                                })}
                             </div>
                         </div>
                     )}
@@ -116,9 +171,30 @@ export default function Layout() {
                     <div className="mb-2">
                         <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">Repositories</h3>
                         <div className="space-y-0.5">
-                            {otherRepos.map((repo: any) => (
-                                <RepoItem key={repo.id} repo={repo} />
-                            ))}
+                            {tree?.length > 0 ? (
+                                tree.map((item: TreeItem) => {
+                                    const isPinned = pinnedRepoIds.includes(item.path);
+                                    if (isPinned) return null; // Hide if pinned to deduplicate
+                                    const repoName = getRepoName(item.path);
+                                    return <FileTreeItem key={item.path} item={item} repoNameForUrl={repoName} />;
+                                })
+                            ) : (
+                                // Fallback if tree is empty (server issue or loading) -> Show basic Repo List
+                                repos?.map((repo: any) => {
+                                    const isPinned = pinnedRepoIds.includes(repo.id);
+                                    if (isPinned) return null;
+                                    return (
+                                        <Link
+                                            key={repo.id}
+                                            to={`/doc/${encodeURIComponent(repo.name)}/README.md`}
+                                            className="block px-2 py-1.5 text-sm text-gray-400 hover:text-white flex items-center"
+                                        >
+                                            <Folder className="mr-2 opacity-50" size={14} />
+                                            {repo.name}
+                                        </Link>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
                 </div>

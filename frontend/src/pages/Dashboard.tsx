@@ -33,27 +33,31 @@ hljs.registerLanguage('dockerfile', dockerfile);
 const customBash = (hljs: any) => {
     const base = bash(hljs);
 
-    // Generic rule: Highlight the first word of a line (or first word after | or &&) as a command
-    const commandRule = {
-        className: 'built_in',
-        begin: /^\s*[\w\.-]+/, // Start of line
-        relevance: 0
+    // Rule for prompt-based commands: $ command
+    const promptRule = {
+        begin: /^\s*[\$#]\s+/,
+        className: 'meta.prompt',
+        contains: [
+            {
+                className: 'built_in', // Highlight strictly the command word
+                begin: /[\w\.-]+/,
+                endsParent: true // Immediately exit to avoid highlighting args
+            }
+        ]
     };
 
-    const pipedCommandRule = {
+    // Rule for implicit commands at start of line: command arg
+    const implicitCommandRule = {
         className: 'built_in',
-        begin: /(\||&&)\s*[\w\.-]+/, // After pipe or and
-        relevance: 0
+        begin: /^\s*[\w\.-]+/,
+        end: /\s/, // Stop at first whitespace
+        excludeEnd: true
     };
 
     // Add generic rules to the top
     if (base.contains) {
-        base.contains.unshift(commandRule);
-        base.contains.unshift(pipedCommandRule);
-        base.contains.unshift({
-            className: 'built_in',
-            begin: /(\.\/|\/)[a-zA-Z0-9_\-\.]+\.sh/
-        });
+        base.contains.unshift(promptRule);
+        base.contains.unshift(implicitCommandRule);
     }
 
     return base;
