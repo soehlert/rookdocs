@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import rehypeSlug from 'rehype-slug';
+import { remarkCleanHeadings, remarkSmartLists, remarkCleanParagraphs } from '../lib/markdown-plugins';
 import { api } from '../lib/api';
 import { FileText, Loader2, AlertCircle, ChevronRight, List } from 'lucide-react';
 import 'highlight.js/styles/nord.css';
@@ -18,6 +19,34 @@ import typescript from 'highlight.js/lib/languages/typescript';
 import python from 'highlight.js/lib/languages/python';
 import go from 'highlight.js/lib/languages/go';
 import dockerfile from 'highlight.js/lib/languages/dockerfile';
+import mermaid from 'mermaid';
+
+// Initialize mermaid
+mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+});
+
+// Mermaid Component
+const Mermaid = ({ chart }: { chart: string }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const [svg, setSvg] = useState('');
+
+    useEffect(() => {
+        if (chart && ref.current) {
+            const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
+            mermaid.render(id, chart).then(({ svg }) => {
+                setSvg(svg);
+            }).catch((error) => {
+                console.error("Mermaid error:", error);
+                setSvg(`<div class="text-red-500">Failed to render diagram</div>`);
+            });
+        }
+    }, [chart]);
+
+    return <div ref={ref} className="mermaid flex justify-center p-4 bg-white/5 rounded-lg overflow-x-auto" dangerouslySetInnerHTML={{ __html: svg }} />;
+};
 
 // Register languages
 hljs.registerLanguage('yaml', yaml);
@@ -28,6 +57,7 @@ hljs.registerLanguage('typescript', typescript);
 hljs.registerLanguage('python', python);
 hljs.registerLanguage('go', go);
 hljs.registerLanguage('dockerfile', dockerfile);
+hljs.registerLanguage('list', bash); // Register list as bash for path highlighting
 
 // Custom Bash Language Definition
 const customBash = (hljs: any) => {
@@ -63,6 +93,13 @@ const customBash = (hljs: any) => {
     return base;
 };
 hljs.registerLanguage('bash', customBash);
+
+// Helper for finding valid language
+const getValidLanguage = (lang: string | null) => {
+    if (!lang) return 'bash';
+    if (lang === 'mermaid') return 'mermaid';
+    return hljs.getLanguage(lang) ? lang : 'bash';
+};
 
 export default function Dashboard() {
     const { "*": path } = useParams();
@@ -109,7 +146,6 @@ export default function Dashboard() {
         // If it's a UUID, try to verify if we can replace it.
         // If it's a name (slug URL), we just use it.
         const firstSegment = parts[0];
-        const decodedSegment = decodeURIComponent(firstSegment);
 
         // If ID, map to Name
         if (repos) {
@@ -206,7 +242,7 @@ export default function Dashboard() {
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-y-auto flex">
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 w-full overflow-x-hidden">
                     <div className="max-w-4xl mx-auto p-8 md:p-12">
                         <article className="prose prose-invert prose-zinc max-w-none 
                             prose-headings:text-gray-100 prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl 
@@ -216,18 +252,24 @@ export default function Dashboard() {
                             prose-strong:text-white prose-blockquote:border-l-primary prose-blockquote:bg-white/5 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg
                         ">
                             <ReactMarkdown
-                                remarkPlugins={[remarkGfm, remarkBreaks]}
+                                remarkPlugins={[remarkGfm, remarkBreaks, remarkCleanHeadings, remarkSmartLists, remarkCleanParagraphs]}
                                 rehypePlugins={[rehypeSlug]}
                                 components={{
                                     code({ node, inline, className, children, ...props }: any) {
                                         const match = /language-(\w+)/.exec(className || '');
                                         const language = match ? match[1] : null;
 
+                                        if (!inline && language === 'mermaid') {
+                                            return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+                                        }
+
                                         if (!inline) {
                                             try {
-                                                // Fallback to customBash if language is missing or 'bash'
-                                                // Check for generic code blocks without language
-                                                const validLanguage = (language && hljs.getLanguage(language)) ? language : 'bash';
+                                                const validLanguage = getValidLanguage(language);
+
+                                                if (validLanguage === 'mermaid') {
+                                                    return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+                                                }
 
                                                 const highlighted = hljs.highlight(String(children).replace(/\n$/, ''), { language: validLanguage }).value;
                                                 return (
