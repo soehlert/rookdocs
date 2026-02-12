@@ -1,0 +1,20 @@
+services:
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-soehlert/rookdocs}-backend:latest
+    container_name: rookdocs-backend
+    volumes:
+      - ./repos:/app/repos
+    environment:
+      - REPO_STORAGE_PATH=/app/repos
+    ports:
+      - "8000:8000"
+    restart: always
+
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-soehlert/rookdocs}-frontend:latest
+    container_name: rookdocs-frontend
+    ports:
+      - "9123:80"
+    depends_on:
+      - backend
+    restart: always

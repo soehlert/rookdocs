@@ -168,8 +168,19 @@ export default function Dashboard() {
         const lines = content.split('\n');
         const headers = [];
         const headerRegex = /^(#{1,4})\s+(.+)$/;
+        let inCodeBlock = false;
 
         for (const line of lines) {
+            // Check for code block toggle (start or end)
+            // We look for lines starting with ``` 
+            if (line.trim().startsWith('```')) {
+                inCodeBlock = !inCodeBlock;
+                continue;
+            }
+
+            // Skip if inside code block
+            if (inCodeBlock) continue;
+
             const match = line.match(headerRegex);
             if (match) {
                 const level = match[1].length;

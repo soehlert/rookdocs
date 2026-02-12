@@ -36,7 +36,10 @@ class GitService:
         repo_path = self.get_repo_path(repo.id)
         try:
             r = git.Repo(repo_path)
-            r.remotes.origin.pull()
+            # Force sync: fetch and reset hard to match remote
+            r.remotes.origin.fetch()
+            r.git.reset('--hard', 'origin/HEAD')
+            
             repo.status = "ready"
             return repo
         except Exception as e:
