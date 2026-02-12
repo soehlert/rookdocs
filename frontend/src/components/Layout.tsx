@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Settings, Search, Menu, X, ChevronRight, ChevronDown, FolderGit2, Pin, FileText, Folder, Loader2 } from 'lucide-react';
+import { Settings, Search, ChevronDown, FolderGit2, Pin, FileText, Folder, Loader2 } from 'lucide-react';
 import { api, type TreeItem, type SearchResult } from '../lib/api';
 
 export default function Layout() {
     const { pathname } = useLocation();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen] = useState(true);
     const [expandedPaths, setExpandedPaths] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchDebounce, setSearchDebounce] = useState('');
@@ -239,7 +239,7 @@ export default function Layout() {
                     <div className="mb-2">
                         <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">Repositories</h3>
                         <div className="space-y-0.5">
-                            {tree?.length > 0 ? (
+                            {tree && tree.length > 0 ? (
                                 tree.map((item: TreeItem) => {
                                     const isPinned = pinnedRepoIds.includes(item.path);
                                     if (isPinned) return null; // Hide if pinned to deduplicate
