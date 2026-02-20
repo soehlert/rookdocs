@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     debug: bool = False
     repo_storage_path: str = "./repos"
     config_file_path: str = "./repos/config.json"
-    # CORS settings
+    # Webhook settings
+    webhook_secret: str | None = None
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:9123"]
 
     class Config:

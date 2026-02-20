@@ -41,6 +41,20 @@ class RepoManager:
     def get_repo(self, repo_id: str) -> Repository | None:
         return self._repos.get(repo_id)
 
+    def find_by_url(self, url: str) -> Repository | None:
+        """Find a repository by its git URL, normalizing common suffixes."""
+        normalized_url = url.strip().rstrip('/')
+        if normalized_url.endswith('.git'):
+            normalized_url = normalized_url[:-4]
+            
+        for repo in self._repos.values():
+            repo_url = str(repo.url).strip().rstrip('/')
+            if repo_url.endswith('.git'):
+                repo_url = repo_url[:-4]
+            if repo_url == normalized_url:
+                return repo
+        return None
+
     async def add_repo(self, repo_create: RepositoryCreate) -> Repository:
         repo_id = str(uuid.uuid4())
         # Determine local path relative to storage

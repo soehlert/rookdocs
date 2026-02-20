@@ -25,7 +25,7 @@ export default function Welcome() {
     const prevPage = () => setPage(p => Math.max(p - 1, 1));
 
     return (
-        <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-700 overflow-y-auto">
+        <div className="h-full flex flex-col items-center justify-start md:justify-center p-8 pt-20 md:pt-8 text-center animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
             {/* Illustration */}
             <div className="mb-8 relative w-32 h-32 md:w-48 md:h-48">
                 <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full"></div>
