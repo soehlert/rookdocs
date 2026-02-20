@@ -6,8 +6,8 @@ import { api, type TreeItem, type SearchResult } from '../lib/api';
 
 export default function Layout() {
     const { pathname } = useLocation();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Change to false by default for mobile, logic handles desktop
-    const [isMobile, setIsMobile] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [expandedPaths, setExpandedPaths] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchDebounce, setSearchDebounce] = useState('');
