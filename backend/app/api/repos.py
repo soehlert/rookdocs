@@ -1,6 +1,5 @@
 import hashlib
 import hmac
-import json
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 
 from app.config import settings

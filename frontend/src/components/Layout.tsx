@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Settings, Search, ChevronDown, FolderGit2, Pin, FileText, Folder, Loader2, Menu, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Settings, Search, ChevronDown, ChessRook, Pin, FileText, Folder, Loader2, Menu, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { api, type TreeItem, type SearchResult } from '../lib/api';
 
 export default function Layout() {
@@ -190,7 +190,7 @@ export default function Layout() {
                         onClick={() => setSearchQuery('')}
                         className="flex items-center space-x-2 font-bold text-gray-100 tracking-tight hover:text-primary transition-colors overflow-hidden"
                     >
-                        <FolderGit2 className="text-primary shrink-0" size={20} />
+                        <ChessRook className="text-primary shrink-0" size={20} />
                         <span className="truncate">RookDocs</span>
                     </Link>
                     {!isMobile && (
@@ -240,7 +240,7 @@ export default function Layout() {
                                                         className="block p-3 hover:bg-white/5 transition-colors group"
                                                     >
                                                         <div className="flex items-center text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1 group-hover:text-gray-400 transition-colors">
-                                                            <FolderGit2 size={10} className="mr-1.5" />
+                                                            <ChessRook size={10} className="mr-1.5" />
                                                             {repoName}
                                                         </div>
                                                         <div className="text-sm font-medium text-gray-200 truncate pl-4 border-l border-white/10 group-hover:border-primary/50 transition-colors">

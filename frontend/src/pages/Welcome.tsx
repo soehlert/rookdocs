@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Cloud, FileText, Folder, BookOpen, ArrowRight, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
+import { Plus, Cloud, FileText, Folder, BookOpen, ArrowRight, ChevronLeft, ChevronRight as ChevronRightIcon, ChessRook } from 'lucide-react';
 import { api } from '../lib/api';
 
 const ITEMS_PER_PAGE = 6; // Grid of 2x3 or 3x2 looks good
@@ -35,7 +35,7 @@ export default function Welcome() {
                     </div>
                     <div className="bg-gradient-to-br from-background-dark to-sidebar-dark p-6 rounded-3xl border border-white/10 shadow-2xl relative z-10">
                         <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mb-0">
-                            <div className="w-6 h-6 border-2 border-primary rounded-md"></div>
+                            <ChessRook size={24} className="text-primary" />
                         </div>
                     </div>
                     <div className={`absolute bottom-10 left-8 bg-background-dark/90 p-5 rounded-2xl border border-white/10 -rotate-6 shadow-xl backdrop-blur-sm z-0 transition-all duration-700 ${hasRepos ? '-translate-x-4' : ''}`}>
