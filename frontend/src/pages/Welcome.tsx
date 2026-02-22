@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Cloud, FileText, Folder, BookOpen, ArrowRight, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
+import { Plus, Cloud, FileText, Folder, BookOpen, ArrowRight, ChevronLeft, ChevronRight as ChevronRightIcon, ChessRook } from 'lucide-react';
 import { api } from '../lib/api';
 
 const ITEMS_PER_PAGE = 6; // Grid of 2x3 or 3x2 looks good
@@ -25,7 +25,7 @@ export default function Welcome() {
     const prevPage = () => setPage(p => Math.max(p - 1, 1));
 
     return (
-        <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-700 overflow-y-auto">
+        <div className="h-full flex flex-col items-center justify-start md:justify-center p-8 pt-20 md:pt-8 text-center animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
             {/* Illustration */}
             <div className="mb-8 relative w-32 h-32 md:w-48 md:h-48">
                 <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full"></div>
@@ -35,7 +35,7 @@ export default function Welcome() {
                     </div>
                     <div className="bg-gradient-to-br from-background-dark to-sidebar-dark p-6 rounded-3xl border border-white/10 shadow-2xl relative z-10">
                         <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mb-0">
-                            <div className="w-6 h-6 border-2 border-primary rounded-md"></div>
+                            <ChessRook size={24} className="text-primary" />
                         </div>
                     </div>
                     <div className={`absolute bottom-10 left-8 bg-background-dark/90 p-5 rounded-2xl border border-white/10 -rotate-6 shadow-xl backdrop-blur-sm z-0 transition-all duration-700 ${hasRepos ? '-translate-x-4' : ''}`}>

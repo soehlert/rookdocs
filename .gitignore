@@ -4,3 +4,13 @@ node_modules/
 dist/
 .env
 repos/config.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+backend/.pytest_cache/
+backend/.python-version
+backend/.ruff_cache/
+backend/.uv_cache/
+backend/.venv/
