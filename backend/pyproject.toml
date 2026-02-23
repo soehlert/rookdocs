@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aiofiles>=24.1.0",
+    "celery[redis]>=5.4",
     "fastapi>=0.115.6",
+    "flower>=2.0",
     "gitpython>=3.1.43",
     "pydantic-settings>=2.7.0",
     "python-multipart>=0.0.19",
@@ -26,3 +28,6 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["B008", "E501"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

@@ -1,4 +1,8 @@
 services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+
   backend:
     image: ghcr.io/${GITHUB_REPOSITORY:-soehlert/rookdocs}-backend:latest
     container_name: rookdocs-backend
@@ -6,8 +10,40 @@ services:
       - ./repos:/app/repos
     environment:
       - REPO_STORAGE_PATH=/app/repos
-    ports:
-      - "8000:8000"
+    depends_on:
+      - redis
+    restart: always
+
+  worker:
+    image: ghcr.io/${GITHUB_REPOSITORY:-soehlert/rookdocs}-backend:latest
+    container_name: rookdocs-worker
+    command: celery -A app.celery_app worker --loglevel=info
+    volumes:
+      - ./repos:/app/repos
+    environment:
+      - REPO_STORAGE_PATH=/app/repos
+    depends_on:
+      - redis
+    restart: always
+
+  beat:
+    image: ghcr.io/${GITHUB_REPOSITORY:-soehlert/rookdocs}-backend:latest
+    container_name: rookdocs-beat
+    command: celery -A app.celery_app beat --loglevel=info
+    volumes:
+      - ./repos:/app/repos
+    environment:
+      - REPO_STORAGE_PATH=/app/repos
+    depends_on:
+      - redis
+    restart: always
+
+  flower:
+    image: ghcr.io/${GITHUB_REPOSITORY:-soehlert/rookdocs}-backend:latest
+    container_name: rookdocs-flower
+    command: celery -A app.celery_app flower --port=5555
+    depends_on:
+      - redis
     restart: always
 
   frontend:

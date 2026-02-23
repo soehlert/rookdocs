@@ -1,4 +1,8 @@
 services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+
   backend:
     build:
       context: ./backend
@@ -10,6 +14,49 @@ services:
       - REPO_STORAGE_PATH=/app/repos
     ports:
       - "8000:8000"
+    depends_on:
+      - redis
+    restart: always
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.celery_app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+      - ./repos:/app/repos
+    environment:
+      - REPO_STORAGE_PATH=/app/repos
+    depends_on:
+      - redis
+    restart: always
+
+  beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.celery_app beat --loglevel=info
+    volumes:
+      - ./backend:/app
+      - ./repos:/app/repos
+    environment:
+      - REPO_STORAGE_PATH=/app/repos
+    depends_on:
+      - redis
+    restart: always
+
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - REPO_STORAGE_PATH=/app/repos
+    depends_on:
+      - redis
     restart: always
 
   frontend:
