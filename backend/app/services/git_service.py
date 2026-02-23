@@ -56,7 +56,7 @@ git_service = None
 
 def get_git_service():
     # In a real app we might inject settings here
-    from app.main import settings
+    from app.config import settings
     global git_service
     if git_service is None:
         git_service = GitService(settings.repo_storage_path)

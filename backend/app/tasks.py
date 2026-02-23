@@ -2,6 +2,8 @@ import logging
 
 from app.celery_app import celery_app
 
+
+
 logger = logging.getLogger(__name__)
 
 
